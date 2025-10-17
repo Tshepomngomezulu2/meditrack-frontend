@@ -3,14 +3,17 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const API_URL = "https://meditrack-backend-3uhu.onrender.com/api";
+// Use environment variable for backend URL
+const API_URL =
+  process.env.REACT_APP_API_URL || "http://localhost:5000/api";
 
 export default function Login() {
   const [form, setForm] = useState({ username: "", password: "" });
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,10 +28,9 @@ export default function Login() {
       const response = await axios.post(`${API_URL}/login`, form);
       const resData = response.data;
 
-      if (resData && resData.id) {
-        const role = resData.role.toLowerCase();
+      if (resData?.id) {
+        const role = resData.role?.toLowerCase();
         localStorage.setItem("user", JSON.stringify(resData));
-
         setMessage("Login successful!");
 
         if (role === "doctor") navigate("/DoctorDashboard");
@@ -36,11 +38,13 @@ export default function Login() {
         else if (role === "patient") navigate(`/PatientDashboard/${resData.id}`);
         else navigate("/");
       } else {
-        setMessage("Login failed. Try again.");
+        setMessage(resData?.message || "Login failed. Try again.");
       }
     } catch (err) {
-      if (err.response && err.response.data?.message) setMessage(err.response.data.message);
-      else setMessage("Login failed. Try again.");
+      const msg =
+        err.response?.data?.message ||
+        "Login failed. Try again. Check your backend URL.";
+      setMessage(msg);
     }
   };
 
@@ -50,13 +54,28 @@ export default function Login() {
         <h2 className="auth-title">Login</h2>
         <form className="auth-form" onSubmit={handleSubmit}>
           <label className="auth-label">Username</label>
-          <input className="auth-input" type="text" name="username" value={form.username} onChange={handleChange} required />
+          <input
+            className="auth-input"
+            type="text"
+            name="username"
+            value={form.username}
+            onChange={handleChange}
+            required
+          />
           <label className="auth-label">Password</label>
-          <input className="auth-input" type="password" name="password" value={form.password} onChange={handleChange} required />
-          <button type="submit" className="auth-btn login-btn">Login</button>
+          <input
+            className="auth-input"
+            type="password"
+            name="password"
+            value={form.password}
+            onChange={handleChange}
+            required
+          />
+          <button type="submit" className="auth-btn login-btn">
+            Login
+          </button>
         </form>
 
-        {/* REGISTER BUTTON */}
         <button
           style={{ marginTop: "15px" }}
           className="auth-btn signup-btn"
@@ -65,7 +84,16 @@ export default function Login() {
           Register
         </button>
 
-        {message && <p style={{ marginTop: "15px", color: message.includes("successful") ? "green" : "red" }}>{message}</p>}
+        {message && (
+          <p
+            style={{
+              marginTop: "15px",
+              color: message.includes("successful") ? "green" : "red"
+            }}
+          >
+            {message}
+          </p>
+        )}
       </div>
     </div>
   );
