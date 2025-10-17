@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = "https://meditrack-backend-3uhu.onrender.com/api";
 
 export default function Login() {
   const [form, setForm] = useState({ username: "", password: "" });
